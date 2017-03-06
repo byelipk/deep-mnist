@@ -78,21 +78,23 @@ if args["run"]:
     from keras.models import load_model
     from keras.utils.np_utils import to_categorical
 
-    # Load our trained model
     try:
         network = load_model("mnist_model.h5")
-
-        # Preprocess image and label
-        test_img   = resized
-        test_img   = test_img.reshape((1, 28 * 28))
-        test_img   = test_img.astype("float32") / 255
-        test_label = to_categorical(np.array(TARGET_LABEL), 10)
-
-        # Does our classifier know the image is a 5?
-        test_loss, test_acc = network.evaluate(test_img, test_label)
-        print()
-        print("Test accuracy:", test_acc)
-        print("Test loss:", test_loss)
-        
     except OSError as e:
         print("Unable to load model. Please run `python mnist_train.py`")
+        exit(-1)
+
+    # Preprocess image and label
+    test_img   = resized
+    test_img   = test_img.reshape((1, 28 * 28))
+    test_img   = test_img.astype("float32") / 255
+    test_label = to_categorical(np.array(TARGET_LABEL), 10)
+
+    # Make prediction
+    preds = network.predict(test_img)
+    index = np.where(preds[0] == max(preds[0]))[0][0]
+
+    if index == TARGET_LABEL:
+        print("Classifier correctly guessed image is number", TARGET_LABEL)
+    else:
+        print("Classifier predicted image was number", index)
