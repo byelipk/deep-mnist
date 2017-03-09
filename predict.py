@@ -2,7 +2,7 @@
 import cv2
 import argparse
 
-# Hello world
+# Goodbye world
 
 ap = argparse.ArgumentParser()
 ap.add_argument(
