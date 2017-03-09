@@ -1,8 +1,6 @@
+#!/usr/bin/env python
 import cv2
-import numpy as np
 import argparse
-import matplotlib.pyplot as plt
-from keras.datasets import mnist
 
 ap = argparse.ArgumentParser()
 ap.add_argument(
@@ -22,20 +20,17 @@ args = vars(ap.parse_args())
 TARGET_LABEL = int(args["target"])
 IMAGE_PATH = args["image"]
 
-# Cropping dimensions
-x_start = 100
-x_end   = 1300
-y_start = 200
-y_end   = 900
 
 # Load and preprocess test image
-image   = cv2.imread(IMAGE_PATH)
-cropped = image[x_start:x_end, y_start:y_end]
-gray    = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
+image = cv2.imread(IMAGE_PATH)
+h, w, c = image.shape
+
+
+
+gray    = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 blurred = cv2.GaussianBlur(gray, (5,5), 0)
 
-
-threshold = 165
+threshold = 155
 maximum   = 255 # Any pixel intensity > threshold is set to this value
 dims      = (28, 28) # All mnist images this 28 x 28
 (T, threshInv) = cv2.threshold(blurred,
@@ -43,8 +38,15 @@ dims      = (28, 28) # All mnist images this 28 x 28
                                maximum,
                                cv2.THRESH_BINARY_INV)
 
-resized = cv2.resize(threshInv, dims, interpolation=cv2.INTER_AREA)
+# Cropping dimensions
+x_start = int(0 + (h * 0.2))
+x_end   = int(h - (h * 0.2))
+y_start = int(0 + (w * 0.0))
+y_end   = int(w - (w * 0.0))
 
+
+cropped = threshInv[x_start:x_end, y_start:y_end]
+resized = cv2.resize(cropped, dims, interpolation=cv2.INTER_AREA)
 
 if args["show"]:
     # Visualize different versions of the image:
@@ -56,8 +58,12 @@ if args["show"]:
     cv2.waitKey(0)
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+from keras.datasets import mnist
 
 if args["compare"]:
+
     # Visualize our image and another 5 in the mnist test set:
     target_img = None
     (_, _), (test_images, test_labels) = mnist.load_data()
@@ -97,4 +103,5 @@ if args["run"]:
     if index == TARGET_LABEL:
         print("Classifier correctly guessed image is number", TARGET_LABEL)
     else:
-        print("Classifier predicted image was number", index)
+        print("Classifier predicted image was number", index,
+              "but it was a", TARGET_LABEL)
